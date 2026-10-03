@@ -1,6 +1,6 @@
 # Findings: threat data on WoW: Forever
 
-Status: **solo and dungeon probes done (2026-10-03).** Still untested: `boss1-5` (no boss fight captured).
+Status: **solo, dungeon and dungeon-boss probes done (2026-10-03).**
 
 ## Client
 
@@ -22,7 +22,7 @@ In combat, solo and in a 5-man dungeon (ThreatProbe 0.1-0.2):
 | `targettarget` | secret | secret | the healer case: targeting the tank |
 | `party1-4target` | secret | secret | the tank's target is not reachable |
 | `mouseover` | secret | secret | |
-| `boss1-5` | *untested* | *untested* | |
+| `boss1-5` | - | - | not present: a dungeon boss fight had no boss unit tokens. Target, focus and the boss's nameplate covered it (focus readable 15/15). |
 
 Secret values can still be **displayed**: `StatusBar:SetValue`, `FontString:SetText` and `SetFormattedText("%d%%")` all accept them.
 
