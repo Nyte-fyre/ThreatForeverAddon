@@ -74,7 +74,8 @@ WORLD = {}
 UnitExists = function(u) return WORLD[u] ~= nil end
 UnitCanAttack = function(_, u) return WORLD[u] ~= nil end
 UnitIsDead = function() return false end
-UnitGUID = function(u) return WORLD[u] and WORLD[u].guid end
+UnitGUID = function(u) local m = WORLD[u]; if not m then return nil end; return m.secretGuid and secret(m.guid) or m.guid end
+C_NamePlate = { GetNamePlateForUnit = function(u) return WORLD[u] and WORLD[u].plate end }
 UnitName = function(u) return WORLD[u] and WORLD[u].name end
 UnitThreatSituation = function(_, u)
   local m = WORLD[u]; if not m or m.status == nil then return nil end
@@ -134,6 +135,18 @@ tick()
 -- Aggro.
 NOW = NOW + 5; WORLD.target.status = 3; tick()
 assert(#SOUNDS == 3, "aggro alert")
+
+-- Dungeon: GUIDs secret; the target's nameplate is matched by frame instead.
+HealerThreatDB.showAll = true
+local plateA, plateB = {}, {}
+WORLD = {
+  target = { guid = "X", secretGuid = true, name = "Ogre", status = 0, scaled = 60, plate = plateA },
+  nameplate1 = { guid = "X", secretGuid = true, name = "Ogre", status = 0, scaled = 60, secretDetail = true, plate = plateA },
+  nameplate2 = { guid = "Y", secretGuid = true, name = "Imp", status = 0, scaled = 20, secretDetail = true, plate = plateB },
+}
+local rows = HealerThreat_Test.Collect()
+assert(#rows == 2, "target and its nameplate merged, got " .. #rows)
+assert(rows[1].precise, "the target (precise) row is the one kept")
 
 -- Settings and slash commands.
 SlashCmdList.HEALERTHREAT("unlock"); SlashCmdList.HEALERTHREAT("lock"); SlashCmdList.HEALERTHREAT("test")

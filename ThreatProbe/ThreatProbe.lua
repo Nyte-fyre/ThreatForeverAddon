@@ -183,7 +183,10 @@ local function GroupUnits()
 end
 
 local function MobUnits()
-	local list = { "target", "focus", "targettarget", "mouseover" }
+	local list = { "target", "focus", "targettarget", "focustarget", "softenemy", "mouseover" }
+	for i = 1, 4 do
+		list[#list + 1] = "party" .. i .. "target"
+	end
 	for i = 1, 5 do
 		list[#list + 1] = "boss" .. i
 	end
@@ -240,14 +243,43 @@ local function Sample(reason)
 	local s = { reason = reason, time = GetTime(), inCombat = InCombatLockdown() and true or false, pairs = {} }
 	s.restrictions = Restrictions()
 	local units = GroupUnits()
+	-- Which nameplate belongs to the target? (for de-duplicating rows)
+	local okPlate, plate = pcall(Resolve("C_NamePlate.GetNamePlateForUnit"), "target")
+	if okPlate and type(plate) == "table" then
+		local tok = plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
+		s.targetPlateToken = Describe(tok)
+	else
+		s.targetPlateToken = okPlate and Describe(plate) or "error"
+	end
+	local getPlate = Resolve("C_NamePlate.GetNamePlateForUnit")
+	local function PlateOf(u)
+		local ok, f = pcall(getPlate, u)
+		if ok and type(f) == "table" and not IsSecret(f) then
+			return f
+		end
+	end
+	local targetPlate, focusPlate = PlateOf("target"), PlateOf("focus")
+	s.targetPlateFound = targetPlate ~= nil
+	s.focusPlateFound = focusPlate ~= nil
 	for _, mob in ipairs(MobUnits()) do
 		local name = Describe(UnitName(mob))
+		local plate = mob:find("^nameplate") and PlateOf(mob)
+		local plateIsTarget = plate and targetPlate and plate == targetPlate or false
+		local plateIsFocus = plate and focusPlate and plate == focusPlate or false
 		local inCombat = Bool(UnitAffectingCombat, mob)
+		local okG, guid = pcall(UnitGUID, mob)
+		guid = okG and Describe(guid) or "error"
+		local okIs, isTarget = pcall(UnitIsUnit, mob, "target")
+		isTarget = okIs and Describe(isTarget) or "error"
 		for _, unit in ipairs(units) do
 			if Bool(UnitExists, unit) ~= false then
 				local p = SamplePair(unit, mob)
 				p.mobName = name
 				p.mobInCombat = Describe(inCombat)
+				p.mobGUID = guid
+				p.mobIsTarget = isTarget
+				p.plateIsTarget = plateIsTarget
+				p.plateIsFocus = plateIsFocus
 				s.pairs[#s.pairs + 1] = p
 			end
 		end

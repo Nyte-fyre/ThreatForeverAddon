@@ -85,17 +85,34 @@ local function SortKey(e)
 	return e.status * 1000 + (e.scaled or 0)
 end
 
+-- The nameplate frame shown for a unit. Frames are plain objects, so two can be
+-- compared even where the mob's GUID is secret (dungeons).
+local function PlateOf(unit)
+	local get = C_NamePlate and C_NamePlate.GetNamePlateForUnit
+	if not get then
+		return nil
+	end
+	local ok, f = pcall(get, unit)
+	if ok and type(f) == "table" and not HT.IsSecret(f) then
+		return f
+	end
+end
+
 function Threat:Collect()
 	local db = HT.db
-	local seen, all, list = {}, {}, {}
+	local seen, plates, all, list = {}, {}, {}, {}
 	for _, unit in ipairs(TOKENS) do
 		local e = ReadUnit(unit)
 		if e then
-			if e.guid and seen[e.guid] then
+			local plate = PlateOf(unit)
+			if (e.guid and seen[e.guid]) or (plate and plates[plate]) then
 				-- already have this mob from a better token
 			else
 				if e.guid then
 					seen[e.guid] = true
+				end
+				if plate then
+					plates[plate] = true
 				end
 				all[#all + 1] = e
 			end

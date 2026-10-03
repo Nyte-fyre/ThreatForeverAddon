@@ -12,14 +12,16 @@ Turn on enemy nameplates (default key `V`). Most of the data comes from them.
 
 | Mob | What you get |
 |---|---|
-| Your **target** | Exact threat %, color by threshold, early warning at your threshold (default 80%) |
+| Your **target** or **focus** | Exact threat %, color by threshold, early warning at your threshold (default 80%) |
 | Any other mob with a **nameplate** | Threat bar and %, plus a warning when you pass the tank or take aggro |
+
+**Healer tip:** keep the tank targeted and `/focus` the main mob. Focus gives exact numbers; targeting the tank doesn't (the tank's target is secret).
 
 Warnings: a sound and a red frame flash when a mob's state rises. They're off when solo, because solo you always tank (setting: *Warn when solo*).
 
 ## What it can't do
 
-- **No early warning on mobs you don't target.** The client keeps their exact % secret from addons. The addon can show that % on the bar but can't compare it to a threshold. For those mobs it warns only once you're past the tank.
+- **No early warning on mobs that aren't your target or focus.** The client keeps their exact % secret from addons. The addon can show that % on the bar but can't compare it to a threshold. For those mobs it warns only once you're past the tank.
 - No threat from the combat log (the client doesn't give addons the combat log), and no prediction.
 - No full raid threat table: it shows your own threat only.
 - `mouseover` threat is secret and not used.

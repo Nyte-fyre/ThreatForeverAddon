@@ -2,7 +2,7 @@
 ## Title: ThreatProbe
 ## Notes: Diagnostic: reports which threat APIs are readable on this client. Prints to chat and saves to ThreatProbeDB.
 ## Author: Nyte-fyre
-## Version: 0.1.0
+## Version: 0.2.0
 ## SavedVariables: ThreatProbeDB
 
 ThreatProbe.lua

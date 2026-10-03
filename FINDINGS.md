@@ -1,6 +1,6 @@
 # Findings: threat data on WoW: Forever
 
-Status: **solo probe done (2026-10-03).** Group/dungeon probe still pending; rows marked *pending* need it.
+Status: **solo and dungeon probes done (2026-10-03).** Still untested: `boss1-5` (no boss fight captured).
 
 ## Client
 
@@ -10,40 +10,38 @@ Status: **solo probe done (2026-10-03).** Group/dungeon probe still pending; row
 | Secret values | active (`issecretvalue` present, `Combat` restriction true in combat) |
 | Combat log | `CombatLogGetCurrentEventInfo` does not exist. No Omen-style estimation. |
 
-## The key result: secrecy depends on the unit token
+## What's readable depends on the unit token
 
-Same mob (Ferocious Grizzled Bear), same fight, in combat:
+In combat, solo and in a 5-man dungeon (ThreatProbe 0.1-0.2):
 
-| Mob token | `UnitThreatSituation` (status 0-3) | `UnitDetailedThreatSituation` (tanking, status, %, value) |
-|---|---|---|
-| `target` | **readable** | **readable**: real numbers, math works (9/9 samples) |
-| `nameplateN` | **readable** (19/19) | secret (19/19) |
-| `mouseover` | secret | secret |
-| `focus`, `bossN` | *pending* (not set in the solo test) | *pending* |
-| `targettarget` (mob via a friendly target) | *pending* (no hostile one in the solo test) | *pending* |
+| Mob token | Status 0-3 | %, threat value, tanking | Notes |
+|---|---|---|---|
+| `target` | readable | **readable** | also while not tanking (4-65% seen), and for every `partyN` |
+| `focus` | readable | **readable** | also while targeting the tank, and for every `partyN` |
+| `nameplateN` | readable | secret (display only) | |
+| `targettarget` | secret | secret | the healer case: targeting the tank |
+| `party1-4target` | secret | secret | the tank's target is not reachable |
+| `mouseover` | secret | secret | |
+| `boss1-5` | *untested* | *untested* | |
 
-Secret values can still be **displayed**: `StatusBar:SetValue`, `FontString:SetText` and `SetFormattedText("%d%%")` all accepted a secret threat percent. They can't be compared, so no addon-side threshold check on them.
+Secret values can still be **displayed**: `StatusBar:SetValue`, `FontString:SetText` and `SetFormattedText("%d%%")` all accept them.
+
+## Identity in instances
+
+- Open world: mob names and GUIDs readable.
+- Dungeon: `UnitName` and `UnitGUID` are **secret**, and `UnitIsUnit(nameplateN, "target")` errors or returns a secret.
+- **Workaround that works:** `C_NamePlate.GetNamePlateForUnit("target")` / `("focus")` returns the nameplate frame, and comparing frames finds the matching `nameplateN`: 17/17 target samples and 18/18 focus samples matched. Healer Threat uses this to merge the target/focus row with its nameplate row.
 
 ## Other details
 
-- Values seen while tanking: `scaledPercent` 100, `rawPercent` **255** (a cap, not a real percent), `threatValue` in display units (0 → 56 → 67 → 186 → 282 over the fight, not Classic's x100 scale).
-- `UNIT_THREAT_LIST_UPDATE` (20 fires, 19 in combat) and `UNIT_THREAT_SITUATION_UPDATE` (4) fire, with readable unit tokens (`target`, `nameplate1`, `player`, `targettarget`).
-- `GetThreatStatusColor`, `UnitThreatPercentageOfLead`, `C_CurveUtil` exist.
-- `C_Secrets.ShouldUnitThreat*BeSecret` aren't reliable to gate on (error for `target`, true for nameplates). Check each returned value with `issecretvalue` instead.
+- `scaledPercent` hits 100 when you take aggro. It can go above 100 for a non-tank with status 1 (e.g. 227%). While tanking, `rawPercent` reads 255 (a cap).
+- `threatValue` is in display units (healer: 10-260 per pull; tank: 100-670).
+- `UNIT_THREAT_LIST_UPDATE` / `UNIT_THREAT_SITUATION_UPDATE` fire with readable unit tokens.
+- `C_Secrets.ShouldUnitThreat*BeSecret` aren't reliable to gate on. Check each value with `issecretvalue`.
 - `C_DamageMeter` has no threat data.
-- Blizzard's own threat options are present: `threatWarning` = 3, `threatShowNumeric` = 0 (target-frame threat % is off).
 
-## What this allows
+## What this means for a healer
 
-| Data | Use |
-|---|---|
-| Exact threat % on your **target** | Real meter + warning at a threshold (80-90%), sound |
-| Status 0-3 on **every mob with a nameplate** | Per-mob warning list: color-coded, sound when status rises |
-| Secret % on nameplate mobs | Can be shown as a bar/text, but cannot trigger a threshold warning |
-
-## Still to verify in a dungeon (with a tank)
-
-- Non-tanking numbers on `target` (is % below 100 readable when you are not tanking?)
-- `focus` and `boss1-5` tokens: readable like `target`, or secret like nameplates?
-- Healer case: mob reached via `targettarget` while targeting the tank.
-- Healing threat across several mobs (nameplate status changing on mobs you never hit).
+- **Put focus on the main mob** (`/focus`). You get exact % and the early warning while you keep the tank targeted.
+- Every other mob with a nameplate shows a bar, and warns once you pass the tank (status 1) or take aggro.
+- Without focus or an enemy target, only the nameplate warnings are available.
