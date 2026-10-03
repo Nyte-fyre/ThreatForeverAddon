@@ -136,6 +136,19 @@ tick()
 NOW = NOW + 5; WORLD.target.status = 3; tick()
 assert(#SOUNDS == 3, "aggro alert")
 
+-- Healer staying safe: low threat on the target is still shown, and with only
+-- status-0 nameplate mobs the frame stays up with the "safe" line.
+HealerThreatDB.showAll = false
+COMBAT = true
+WORLD = { target = { guid = "Q", name = "Gnoll", status = 0, scaled = 12 } }
+assert(#HealerThreat_Test.Collect() == 1, "target at 12% shown")
+WORLD = { nameplate1 = { guid = "R", name = "Gnoll", status = 0, scaled = 12, secretDetail = true } }
+assert(#HealerThreat_Test.Collect() == 0, "status-0 nameplate hidden in healer view")
+tick(); assert(main.shown, "frame visible while engaged")
+assert(main.empty.shown, "safe line shown")
+WORLD = {}
+tick(); assert(main.shown == false, "hidden when nothing has you on its threat table")
+
 -- Dungeon: GUIDs secret; the target's nameplate is matched by frame instead.
 HealerThreatDB.showAll = true
 local plateA, plateB = {}, {}

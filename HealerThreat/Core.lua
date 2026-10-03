@@ -10,7 +10,7 @@ HT.name = "Healer Threat"
 local DEFAULTS = {
 	enabled = true,
 	warnAt = 80,        -- scaled threat % that triggers the early warning (target only)
-	showAt = 50,        -- healer view: show readable mobs from this %
+	showAt = 0,         -- healer view: show target/focus from this % (0 = always)
 	showAll = false,    -- full list: every mob you are on the threat table of
 	sound = true,
 	flash = true,
@@ -99,13 +99,12 @@ end
 
 function HT.Refresh()
 	dirty = false
-	local entries = {}
+	local entries, all = {}, {}
 	if HT.db.enabled then
-		local all
 		entries, all = HT.Threat:Collect()
 		HT.Alerts:Process(all)
 	end
-	HT.UI:Render(entries)
+	HT.UI:Render(entries, #all)
 end
 
 local frame = CreateFrame("Frame")
@@ -126,6 +125,11 @@ frame:SetScript("OnEvent", function(self, event, arg1)
 		end
 		HealerThreatDB = HealerThreatDB or {}
 		HT.db = HealerThreatDB
+		-- v2: the old 50% default hid the frame for healers who stayed safe.
+		if HT.db.enabled ~= nil and (HT.db.dbVersion or 1) < 2 then
+			HT.db.showAt = 0
+		end
+		HT.db.dbVersion = 2
 		ApplyDefaults(HT.db, DEFAULTS)
 		for _, e in ipairs(EVENTS) do
 			pcall(self.RegisterEvent, self, e)

@@ -28,7 +28,7 @@ Warnings: a sound and a red frame flash when a mob's state rises. They're off wh
 
 ## Settings
 
-`/hthreat` opens Options > AddOns > Healer Threat: enable, sound, flash, warn when solo, full list (for tanks and DPS), hide out of combat, warning threshold, healer-view threshold, max rows, scale, lock/unlock, test rows, reset position.
+`/hthreat` opens Options > AddOns > Healer Threat: enable, sound, flash, warn when solo, full list (for tanks and DPS), hide out of combat, warning threshold, show target/focus from %, max rows, scale, lock/unlock, test rows, reset position.
 
 Commands: `/hthreat on | off | toggle | lock | unlock | test | reset | help`.
 

@@ -19,7 +19,7 @@ local CHECKS = {
 
 local STEPPERS = {
 	{ key = "warnAt", label = "Warning threshold", min = 50, max = 100, step = 5, fmt = "%d%%" },
-	{ key = "showAt", label = "Healer view: show mobs from", min = 0, max = 100, step = 10, fmt = "%d%%" },
+	{ key = "showAt", label = "Show target/focus from", min = 0, max = 100, step = 10, fmt = "%d%%" },
 	{ key = "maxRows", label = "Max rows", min = 1, max = 12, step = 1, fmt = "%d" },
 	{ key = "scale", label = "Scale", min = 0.5, max = 2.0, step = 0.1, fmt = "%.1f" },
 }

@@ -112,6 +112,10 @@ function UI:Init()
 	frame.title:SetPoint("TOPLEFT", PAD + 2, -2)
 	frame.title:SetText("Threat")
 
+	frame.empty = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
+	frame.empty:SetPoint("TOPLEFT", PAD + 4, -(HEADER_H + 2))
+	frame.empty:SetText("Safe: no mob is close to you")
+
 	frame.hint = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
 	frame.hint:SetPoint("TOPRIGHT", -PAD - 2, -2)
 
@@ -183,16 +187,19 @@ function UI:Flash(level)
 	flashAnim:Play()
 end
 
-function UI:Render(entries)
+-- entries: rows to show. engaged: how many mobs have you on their threat table.
+-- The frame shows whenever you're engaged (even if every row is filtered out),
+-- so it's visibly working; it hides when nothing has you on its threat table.
+function UI:Render(entries, engaged)
 	if not frame then
 		return
 	end
 	local db = HT.db
 	if testMode then
-		entries = DEMO
+		entries, engaged = DEMO, #DEMO
 	end
 	local unlocked = not db.locked
-	local show = db.enabled and (#entries > 0 or unlocked or testMode)
+	local show = db.enabled and ((engaged or 0) > 0 or unlocked or testMode)
 	if show and db.hideOutOfCombat and not InCombatLockdown() and not unlocked and not testMode then
 		show = false
 	end
@@ -208,6 +215,11 @@ function UI:Render(entries)
 		else
 			rows[i]:Hide()
 		end
+	end
+	if n == 0 then
+		frame.empty:Show()
+	else
+		frame.empty:Hide()
 	end
 	local shownRows = math.max(n, 1)
 	frame:SetHeight(HEADER_H + shownRows * (ROW_H + GAP) + PAD - GAP)
