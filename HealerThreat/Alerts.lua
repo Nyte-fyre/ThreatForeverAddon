@@ -60,6 +60,7 @@ function Alerts:Process(entries)
 		lastLevel[key] = level
 	end
 	if top > 0 then
+		HT.Log:Alert(top)
 		if db.sound then
 			PlayAlert(top)
 		end

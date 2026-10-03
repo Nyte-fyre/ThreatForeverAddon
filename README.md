@@ -17,6 +17,8 @@ Turn on enemy nameplates (default key `V`). Most of the data comes from them.
 
 **Healer tip:** keep the tank targeted and `/focus` the main mob. Focus gives exact numbers; targeting the tank doesn't (the tank's target is secret).
 
+Rows are marked **T** (target) and **F** (focus).
+
 Warnings: a sound and a red frame flash when a mob's state rises. They're off when solo, because solo you always tank (setting: *Warn when solo*).
 
 ## What it can't do
@@ -30,7 +32,7 @@ Warnings: a sound and a red frame flash when a mob's state rises. They're off wh
 
 `/hthreat` opens Options > AddOns > Healer Threat: enable, sound, flash, warn when solo, full list (for tanks and DPS), hide out of combat, warning threshold, show target/focus from %, max rows, scale, lock/unlock, test rows, reset position.
 
-Commands: `/hthreat on | off | toggle | lock | unlock | test | reset | help`.
+Commands: `/hthreat on | off | toggle | lock | unlock | test | reset | log | help`. `log` prints your last 5 fights (target/focus peak %, time past the tank, alerts); the full log is in `HealerThreatDB.log`..
 
 ## Repo
 

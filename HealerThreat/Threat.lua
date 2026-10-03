@@ -105,14 +105,19 @@ function Threat:Collect()
 		local e = ReadUnit(unit)
 		if e then
 			local plate = PlateOf(unit)
-			if (e.guid and seen[e.guid]) or (plate and plates[plate]) then
-				-- already have this mob from a better token
+			local kept = (e.guid and seen[e.guid]) or (plate and plates[plate])
+			if kept then
+				-- already have this mob from a better token; remember the alias
+				-- so a focus that is also the target still counts as focus
+				if unit == "focus" and not kept.alias then
+					kept.alias = "focus"
+				end
 			else
 				if e.guid then
-					seen[e.guid] = true
+					seen[e.guid] = e
 				end
 				if plate then
-					plates[plate] = true
+					plates[plate] = e
 				end
 				all[#all + 1] = e
 			end

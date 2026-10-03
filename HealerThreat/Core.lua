@@ -97,14 +97,24 @@ function HT.MarkDirty()
 	dirty = true
 end
 
-function HT.Refresh()
-	dirty = false
+local function DoRefresh()
 	local entries, all = {}, {}
 	if HT.db.enabled then
 		entries, all = HT.Threat:Collect()
 		HT.Alerts:Process(all)
+		if InCombatLockdown() then
+			HT.Log:Sample(all, entries)
+		end
 	end
 	HT.UI:Render(entries, #all)
+end
+
+function HT.Refresh()
+	dirty = false
+	local ok, err = pcall(DoRefresh)
+	if not ok then
+		HT.Log:Error(err)
+	end
 end
 
 local frame = CreateFrame("Frame")
@@ -138,8 +148,11 @@ frame:SetScript("OnEvent", function(self, event, arg1)
 		HT.Settings:Init()
 		return
 	end
-	if event == "PLAYER_REGEN_ENABLED" then
+	if event == "PLAYER_REGEN_DISABLED" then
+		HT.Log:Start()
+	elseif event == "PLAYER_REGEN_ENABLED" then
 		HT.Alerts:Reset()
+		HT.Log:Finish()
 	end
 	dirty = true
 end)
@@ -183,8 +196,10 @@ SlashCmdList.HEALERTHREAT = function(msg)
 	elseif msg == "reset" then
 		HT.ResetPosition()
 		HT.Print("frame position reset.")
+	elseif msg == "log" then
+		HT.Log:PrintRecent(5)
 	elseif msg == "help" then
-		HT.Print("/hthreat (settings), on, off, toggle, lock, unlock, test, reset")
+		HT.Print("/hthreat (settings), on, off, toggle, lock, unlock, test, reset, log")
 	else
 		HT.Settings:Open()
 	end

@@ -62,6 +62,7 @@ Settings = { RegisterCanvasLayoutCategory = function() return { GetID = function
   RegisterAddOnCategory = function() end, OpenToCategory = function() end }
 
 NOW = 0
+date = os.date
 GetTime = function() return NOW end
 COMBAT = false
 InCombatLockdown = function() return COMBAT end
@@ -160,6 +161,29 @@ WORLD = {
 local rows = HealerThreat_Test.Collect()
 assert(#rows == 2, "target and its nameplate merged, got " .. #rows)
 assert(rows[1].precise, "the target (precise) row is the one kept")
+
+-- Fight log: focus that is also the target counts as focus; separate focus too.
+COMBAT = true
+f.scripts.OnEvent(f, "PLAYER_REGEN_DISABLED")
+local plateC, plateD = {}, {}
+WORLD = {
+  target = { guid = "C", secretGuid = true, name = "Boss", status = 0, scaled = 30, plate = plateC },
+  focus = { guid = "C", secretGuid = true, name = "Boss", status = 0, scaled = 30, plate = plateC },
+  nameplate1 = { guid = "C", secretGuid = true, name = "Boss", status = 0, scaled = 30, secretDetail = true, plate = plateC },
+}
+local r = HealerThreat_Test.Collect()
+assert(#r == 1 and r[1].alias == "focus", "focus merged into target row with alias")
+tick(); tick()
+WORLD.focus = { guid = "D", secretGuid = true, name = "Add", status = 0, scaled = 45, plate = plateD }
+WORLD.nameplate2 = { guid = "D", secretGuid = true, name = "Add", status = 0, scaled = 45, secretDetail = true, plate = plateD }
+assert(#HealerThreat_Test.Collect() == 2, "separate focus row")
+tick()
+COMBAT = false
+f.scripts.OnEvent(f, "PLAYER_REGEN_ENABLED")
+local fight = HealerThreatDB.log[#HealerThreatDB.log]
+assert(fight.focusSamples == 3 and fight.focusMax == 45, "focus logged: " .. fight.focusSamples .. " " .. fight.focusMax)
+assert(fight.targetSamples == 3 and fight.targetMax == 30, "target logged")
+SlashCmdList.HEALERTHREAT("log")
 
 -- Settings and slash commands.
 SlashCmdList.HEALERTHREAT("unlock"); SlashCmdList.HEALERTHREAT("lock"); SlashCmdList.HEALERTHREAT("test")

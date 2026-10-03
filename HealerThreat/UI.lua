@@ -51,8 +51,12 @@ local function CreateRow(i)
 	local bg = bar:CreateTexture(nil, "BACKGROUND")
 	bg:SetAllPoints()
 	bg:SetColorTexture(0, 0, 0, 0.5)
+	bar.tag = bar:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	bar.tag:SetPoint("LEFT", 4, 0)
+	bar.tag:SetWidth(18)
+	bar.tag:SetJustifyH("LEFT")
 	bar.name = bar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	bar.name:SetPoint("LEFT", 4, 0)
+	bar.name:SetPoint("LEFT", 22, 0)
 	bar.name:SetPoint("RIGHT", -40, 0)
 	bar.name:SetJustifyH("LEFT")
 	bar.name:SetWordWrap(false)
@@ -65,6 +69,9 @@ end
 local function SetRow(bar, e, db)
 	local c = RowColor(e, db)
 	bar:SetStatusBarColor(c[1], c[2], c[3])
+	local isTarget = e.unit == "target"
+	local isFocus = e.unit == "focus" or e.alias == "focus"
+	bar.tag:SetText((isTarget and "T" or "") .. (isFocus and "F" or ""))
 	if not pcall(bar.name.SetText, bar.name, e.name) then
 		bar.name:SetText("?")
 	end
@@ -89,9 +96,9 @@ local function SetRow(bar, e, db)
 end
 
 local DEMO = {
-	{ name = "Defias Pillager (target)", precise = true, scaled = 92, status = 0 },
+	{ name = "Defias Pillager", unit = "target", precise = true, scaled = 92, status = 0 },
 	{ name = "Defias Overseer", status = 1, scaledDisplay = 100, hasDisplay = true },
-	{ name = "Defias Miner", precise = true, scaled = 64, status = 0 },
+	{ name = "Defias Miner", unit = "focus", precise = true, scaled = 64, status = 0 },
 	{ name = "Kobold Tunneler", status = 0, scaledDisplay = 30, hasDisplay = true },
 }
 
