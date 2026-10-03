@@ -1,0 +1,14 @@
+## Interface: 16001
+## Title: Healer Threat
+## Notes: Warns you before you pull aggro. Shows only the mobs you are gaining threat on.
+## Author: Nyte-fyre
+## Version: 0.1.0
+## X-License: MIT
+## SavedVariables: HealerThreatDB
+## IconTexture: Interface\Icons\Ability_Physical_Taunt
+
+Core.lua
+Threat.lua
+Alerts.lua
+UI.lua
+Settings.lua
