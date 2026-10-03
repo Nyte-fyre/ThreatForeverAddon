@@ -162,6 +162,20 @@ local rows = HealerThreat_Test.Collect()
 assert(#rows == 2, "target and its nameplate merged, got " .. #rows)
 assert(rows[1].precise, "the target (precise) row is the one kept")
 
+-- Healer targets the tank: the mob via targettarget is fully secret and shares
+-- its nameplate with nameplate1 (status readable). The nameplate entry must win.
+local plateT = {}
+WORLD = {
+  targettarget = { guid = "T", secretGuid = true, name = "Ogre", status = 1, scaled = 105,
+    secretDetail = true, secretStatus = true, plate = plateT },
+  nameplate1 = { guid = "T", secretGuid = true, name = "Ogre", status = 1, scaled = 105,
+    secretDetail = true, plate = plateT },
+}
+HealerThreatDB.showAll = false
+local rt = HealerThreat_Test.Collect()
+assert(#rt == 1 and rt[1].unit == "nameplate1" and rt[1].status == 1,
+  "readable nameplate row kept over secret targettarget")
+
 -- Fight log: focus that is also the target counts as focus; separate focus too.
 COMBAT = true
 f.scripts.OnEvent(f, "PLAYER_REGEN_DISABLED")

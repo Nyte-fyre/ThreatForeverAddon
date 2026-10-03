@@ -5,20 +5,25 @@ local _, HT = ...
 --   target            full numbers readable in combat ("precise")
 --   nameplateN        status 0-3 readable, percent secret (display only)
 --   mouseover         everything secret (not used)
--- focus, bossN and targettarget are read the same way and classified per value,
--- so they work whichever way the client treats them.
+--   focus             like target
+--   targettarget      everything secret (kept last, see TOKENS)
+-- Every value is classified on its own, so a client change can't break this.
 
 local Threat = {}
 HT.Threat = Threat
 
--- Order matters: the first token that reaches a mob wins (target gives numbers).
-local TOKENS = { "target", "focus", "targettarget" }
+-- Order matters: the first token that reaches a mob wins, so tokens go from
+-- most to least readable. targettarget (the mob via a friendly target, e.g.
+-- the tank) is fully secret, so it goes last: otherwise it would claim the
+-- mob's nameplate and hide that mob's readable status.
+local TOKENS = { "target", "focus" }
 for i = 1, 5 do
 	TOKENS[#TOKENS + 1] = "boss" .. i
 end
 for i = 1, 40 do
 	TOKENS[#TOKENS + 1] = "nameplate" .. i
 end
+TOKENS[#TOKENS + 1] = "targettarget"
 Threat.TOKENS = TOKENS
 
 local Readable, Bool = HT.Readable, HT.Bool
